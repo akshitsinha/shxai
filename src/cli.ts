@@ -7,26 +7,21 @@ const program = new Command();
 export function setupCLI(): Command {
   program
     .name("shellx")
-    .description("A modern CLI chatbot with minimal interface")
-    .version("1.0.0");
+    .description(
+      "AI-powered shell command assistant - get help with terminal commands and shell operations"
+    )
+    .version("1.0.0")
+    .argument("[query...]", "Your shell command question or query")
+    .action(async (queryArgs: string[]) => {
+      try {
+        const initialQuery =
+          queryArgs && queryArgs.length > 0 ? queryArgs.join(" ") : undefined;
 
-  // Main chat command (default)
-  program.action(async () => {
-    try {
-      // Start the chat interface
-      await startChat();
-    } catch (error) {
-      logger.error("Failed to start chat interface:", error);
-      process.exit(1);
-    }
-  });
-
-  // Add help command
-  program
-    .command("help")
-    .description("Show help information")
-    .action(() => {
-      program.help();
+          await startChat(initialQuery);
+      } catch (error) {
+        logger.error("Failed to start application:", error);
+        process.exit(1);
+      }
     });
 
   return program;

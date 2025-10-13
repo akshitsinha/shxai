@@ -1,17 +1,23 @@
 {
-  "name": "shellx",
-  "version": "1.0.0",
-  "description": "A modern CLI chatbot with minimal interface",
+  "name": "ai-shellx",
+  "version": "0.0.1",
+  "description": "A shell command assistant - get help with terminal commands and shell operations",
   "main": "dist/index.js",
   "bin": {
     "shellx": "./bin/shellx.js",
     "shx": "./bin/shellx.js"
   },
+  "files": [
+    "dist",
+    "bin"
+  ],
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --minify --platform=node --outfile=dist/index.js --external:inquirer --external:commander --external:ora --external:chalk --external:winston",
+    "build": "esbuild src/index.ts --bundle --minify --platform=node --outfile=dist/index.js --packages=external",
     "start": "node dist/index.js",
     "dev": "npm run build && node dist/index.js",
     "clean": "rm -rf dist",
+    "deploy": "wrangler deploy",
+    "worker:dev": "wrangler dev",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -23,18 +29,19 @@
   "author": "Akshit Sinha",
   "license": "MIT",
   "dependencies": {
-    "@cloudflare/ai-utils": "^1.0.1",
-    "@inquirer/prompts": "^7.8.6",
-    "agents": "^0.2.10",
+    "@inquirer/prompts": "^7.9.0",
+    "agents": "^0.2.13",
+    "ai": "^5.0.70",
     "chalk": "^5.6.2",
     "commander": "^14.0.1",
-    "inquirer": "^12.9.6",
     "ora": "^9.0.0",
-    "winston": "^3.18.3"
+    "uuid": "^13.0.0",
+    "winston": "^3.18.3",
+    "workers-ai-provider": "^2.0.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20251008.0",
-    "@types/node": "^22.18.9",
+    "@types/node": "^22.18.10",
     "esbuild": "^0.25.10",
     "typescript": "^5.9.3",
     "wrangler": "^4.42.2"
