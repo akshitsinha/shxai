@@ -1,6 +1,6 @@
 {
   "name": "ai-shellx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A shell command assistant - get help with terminal commands and shell operations",
   "main": "dist/index.js",
   "bin": {
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "esbuild src/index.ts --bundle --minify --platform=node --outfile=dist/index.js --packages=external",
     "start": "node dist/index.js",
-    "dev": "npm run build && node dist/index.js",
+    "dev": "npm run build && cross-env NODE_ENV=development node dist/index.js",
     "clean": "rm -rf dist",
     "deploy": "wrangler deploy",
     "worker:dev": "wrangler dev",
@@ -22,7 +22,6 @@
   },
   "keywords": [
     "cli",
-    "chatbot",
     "terminal",
     "command-line"
   ],
@@ -30,8 +29,8 @@
   "license": "MIT",
   "dependencies": {
     "@inquirer/prompts": "^7.9.0",
-    "agents": "^0.2.13",
-    "ai": "^5.0.70",
+    "agents": "^0.2.14",
+    "ai": "^5.0.76",
     "chalk": "^5.6.2",
     "commander": "^14.0.1",
     "ora": "^9.0.0",
@@ -41,10 +40,11 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@types/node": "^22.18.10",
-    "esbuild": "^0.25.10",
+    "@types/node": "^22.18.11",
+    "cross-env": "^10.1.0",
+    "esbuild": "^0.25.11",
     "typescript": "^5.9.3",
-    "wrangler": "^4.42.2"
+    "wrangler": "^4.43.0"
   },
   "engines": {
     "node": ">=20.0.0"

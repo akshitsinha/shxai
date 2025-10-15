@@ -3,12 +3,12 @@ export interface Config {
 }
 
 export function getConfig(): Config {
+  const env = process.env.NODE_ENV;
   const workerUrl =
-    process.env.NODE_ENV === "production"
-      ? process.env.WORKER_URL || "https://cf-shellx.asinha.workers.dev/"
-      : process.env.WORKER_URL || "http://localhost:8787";
+    process.env.WORKER_URL ||
+    (env === "development"
+      ? "http://localhost:8787"
+      : "https://cf-shellx.asinha.workers.dev/");
 
-  return {
-    workerUrl,
-  };
+  return { workerUrl };
 }

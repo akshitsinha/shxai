@@ -162,9 +162,12 @@ If the output shows an error, analyze it and provide a corrected command with ne
 
 export default {
   async fetch(request: any, env: Env, _ctx: ExecutionContext) {
-    return (
-      (await routeAgentRequest(request, env)) ||
-      new Response("Not found", { status: 404 })
-    );
+    const agentResponse = await routeAgentRequest(request, env);
+
+    if (agentResponse) {
+      return agentResponse;
+    }
+
+    return Response.redirect("https://npmjs.com/package/ai-shellx", 301);
   },
 } satisfies ExportedHandler<Env>;
