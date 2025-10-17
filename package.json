@@ -1,6 +1,6 @@
 {
   "name": "ai-shellx",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "A shell command assistant - get help with terminal commands and shell operations",
   "main": "dist/index.js",
   "bin": {

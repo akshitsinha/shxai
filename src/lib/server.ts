@@ -21,12 +21,21 @@ const responseSchema = z.object({
   needContext: z
     .boolean()
     .describe(
-      "Whether the command needs to be executed to provide context for refinement"
+      "Set true when command execution output is needed to provide a better suggestion (e.g., checking system state, file contents, or validation). Set false when you can provide the final command directly without execution feedback.",
     ),
-  success: z
-    .boolean()
-    .describe("True if the AI could generate a valid command, false otherwise"),
+  success: z.boolean().describe("True if a valid command was generated"),
 });
+
+const SYSTEM_PROMPT =
+  "You are a shell command assistant. Generate shell commands based on user requests.";
+
+const MESSAGE_FORMATTERS: Record<string, (data: any) => string> = {
+  inquiry: (data) => `[User OS: ${data.os}]\n\n${data.content}`,
+  context: (data) =>
+    `Command output:\n${data.commandOutput}\n\nProvide a refined command based on this output.`,
+  refine: (data) =>
+    `Additional context: ${data.additionalContext}\n\nRefine the command accordingly.`,
+};
 
 export interface Env {
   AI: Ai;
@@ -59,99 +68,58 @@ export class ShellAgent extends Agent<Env, ShellAgentState> {
     }
   }
 
+  private async generateCommand(
+    messages: ConversationMessage[],
+    systemPrompt: string,
+  ) {
+    const result = await generateObject({
+      model,
+      schema: responseSchema,
+      system: systemPrompt,
+      messages,
+    });
+
+    const success = result.object.success ?? false;
+    return {
+      command: success ? result.object.command || "" : "",
+      explanation: success ? result.object.explanation || "" : "",
+      needContext: result.object.needContext ?? false,
+      success,
+    };
+  }
+
   async onMessage(connection: Connection, message: WSMessage) {
     if (typeof message !== "string") return;
 
     try {
       const data = JSON.parse(message);
+      const { type } = data;
 
-      if (data.type === "inquiry" && data.content) {
-        const userMessage = data.content;
-
-        const messagesWithUser: ConversationMessage[] = [
-          ...this.state.messages,
-          { role: "user" as const, content: userMessage },
-        ];
-
-        const result = await generateObject({
-          model: model,
-          schema: responseSchema,
-          system: `You are a shell command assistant. Generate shell commands based on user requests.
-
-Set needContext=true when:
-- The command output is needed to generate a more accurate or complete command
-- You need to check system state, file contents, or command output to refine the suggestion
-- The user's request requires information that can only be obtained by running a command first
-
-Set needContext=false when:
-- You can provide the final command directly without needing execution feedback
-- The command is straightforward and doesn't require validation or refinement`,
-          messages: messagesWithUser,
-        });
-
-        const success = result.object.success ?? false;
-        const response = {
-          command: success ? result.object.command : "",
-          explanation: success ? result.object.explanation : "",
-          needContext: result.object.needContext ?? false,
-          success,
-        };
-
-        console.log("Sent " + JSON.stringify(response));
-        connection.send(JSON.stringify(response));
-
-        this.setState({
-          messages: [
-            ...messagesWithUser,
-            { role: "assistant" as const, content: JSON.stringify(response) },
-          ],
-        });
-      } else if (data.type === "context" && data.commandOutput) {
-        const contextMessage = `Command output:\n${data.commandOutput}\n\nBased on this output, provide a refined command and explanation.`;
-
-        const messagesWithContext: ConversationMessage[] = [
-          ...this.state.messages,
-          { role: "user" as const, content: contextMessage },
-        ];
-
-        const result = await generateObject({
-          model: model,
-          schema: responseSchema,
-          system: `You are a shell command assistant. The user has executed a command and provided the output.
-
-Generate a refined command based on the command output.
-
-Set needContext=true if you need to gather more information by executing another command.
-Set needContext=false if you can now provide the final command.
-
-If the output shows an error, analyze it and provide a corrected command with needContext=false so it can be retried.`,
-          messages: messagesWithContext,
-        });
-
-        const success = result.object.success ?? false;
-        const response = {
-          command: success ? result.object.command || "" : "",
-          explanation: success ? result.object.explanation || "" : "",
-          needContext: result.object.needContext ?? false,
-          success,
-        };
-
-        connection.send(JSON.stringify(response));
-
-        this.setState({
-          messages: [
-            ...messagesWithContext,
-            { role: "assistant" as const, content: JSON.stringify(response) },
-          ],
-        });
+      if (!type || !MESSAGE_FORMATTERS[type]) {
+        return;
       }
+
+      const userContent = MESSAGE_FORMATTERS[type](data);
+
+      const messages: ConversationMessage[] = [
+        ...this.state.messages,
+        { role: "user", content: userContent },
+      ];
+
+      const response = await this.generateCommand(messages, SYSTEM_PROMPT);
+
+      console.log("Sent " + JSON.stringify(response));
+      connection.send(JSON.stringify(response));
+
+      this.setState({
+        messages: [
+          ...messages,
+          { role: "assistant", content: JSON.stringify(response) },
+        ],
+      });
     } catch (error) {
       console.error("Error processing message:", error);
-      connection.send(
-        JSON.stringify({
-          error: "Failed to process message",
-        })
-      );
+      connection.send(JSON.stringify({ error: "Failed to process message" }));
     }
   }
 

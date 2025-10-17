@@ -24,6 +24,23 @@ Or get a direct suggestion by providing your query:
 shx list all files in the current directory, including hidden ones
 ```
 
+Show explanations for generated commands:
+
+```bash
+shx --explain list all files
+# or use the short form
+shx -e list all files
+```
+
+### Refine suggestions
+
+When a command is suggested, you can:
+
+- **Press Enter** to execute the command as-is
+- **Type additional context** to refine the suggestion before execution
+
+This allows you to iteratively improve the command until it matches your exact needs.
+
 ## License
 
 MIT License. See [LICENSE.md](LICENSE.md) for details.

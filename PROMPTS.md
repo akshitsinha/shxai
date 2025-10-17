@@ -1,6 +1,6 @@
 # Shx Project Prompts
 
-This document contains all the prompts and iterations I used to develop the ShellX CLI project, organized by development stage.
+This document contains all the prompts and iterations I used to develop the ShellX CLI project, organized by development stage. Claude Sonnet 4.5 was used for most of these.
 
 ---
 
@@ -63,5 +63,48 @@ The majority of core functionality was implemented by hand and honestly, it's be
 8. Prepare the npm project for publication. The project builds with `npm run build`, producing a minified file at `dist/index.js` and an entry point at `bin/shellx.js`.
 
 9. Create a README.md for this project. Keep it professional.
+
+---
+
+## Stage IV: Code Optimization and User Refinement Feature
+
+This stage focused on code quality improvements, eliminating duplication, and adding a user refinement feature before execution. The codebase was significantly cleaned up by consolidating repeated logic, moving documentation to schemas, and implementing a more intuitive user interaction flow. The goal was to maintain all functionality while making the code more maintainable and professional.
+
+### Prompts
+
+1. A lot of code looks reused. Understand this codebase, and make this file to the point and professional.
+   - **Context:** Referring to `src/lib/server.ts`
+   - **Note:** The AI identified duplicate AI generation logic for "inquiry" and "context" message handlers and consolidated them into a single `generateCommand()` method.
+
+2. When let's say, the user is prompted for a command but the user feels it's incomplete, the user can do Shift + Enter, to provide more context and further refine the command suggested. Understand the entire codebase before making edits.
+   - **Note:** This led to implementing a new "refine" message type on the server side, adding `sendRefinementMessage()` in handlers, and creating an interactive refinement loop in the interface where users can provide additional context before execution.
+
+3. This works, but the codebase can be simplified to achieve the same functionality. Make this code efficient and professional.
+   - **Implementation Details:**
+     - **Handlers (`src/chat/handlers.ts`):** Consolidated three nearly identical send functions into a single `sendMessage()` generic function with three concise exports.
+     - **Interface (`src/chat/interface.ts`):** Extracted helper functions (`validateResponse`, `displayCommand`, `promptUser`) to eliminate duplication. Split complex `processMessage` logic into focused functions (`refineCommand`, `executeWithContext`).
+     - **Server (`src/lib/server.ts`):** Used `MESSAGE_FORMATTERS` map for cleaner message type handling, removed repetitive conditional checks.
+
+4. I believe you can also simplify SYSTEM_PROMPTS. Like specify the purpose of needContext in responseSchema itself.
+   - **Result:** Moved all `needContext` documentation from three separate system prompts into the Zod schema description. Replaced verbose prompt objects with a single `SYSTEM_PROMPT` constant. This reduced server.ts from 168 to 137 lines while maintaining identical functionality.
+
+5. No need to console log "(Press Enter to execute, or type additional context to refine)" just specify that in the README. Also turn off displaying explanations in configs. Instead add a flag like --explain or -e in the CLI, only then log the explanation as well.
+   - **Implementation:**
+     - Added `--explain` / `-e` flag to CLI
+     - Made explanations opt-in rather than always displayed
+     - Added module-level `showExplanations` variable
+     - Updated README with Interactive Refinement section
+     - Cleaned up UI by removing hint text
+
+6. Make this cross-platform. In the initial prompt used, specify the OS of the user as well for better cross platform support.
+   - **Implementation:**
+     - Added `getOSInfo()` function in handlers.ts to detect OS (macOS/Linux/Windows) and current shell
+     - Updated `handleMessage()` to include OS information when sending the initial inquiry
+     - Modified MESSAGE_FORMATTERS to prepend OS info (e.g., `[User OS: macOS (shell: /bin/zsh)]`) to user requests
+     - Allows AI to generate platform-specific commands and use appropriate shell syntax
+   - **Note:** This enables the AI to automatically adapt suggestions based on the user's operating system and shell environment.
+
+7. Add a STAGE IV to PROMPTS.md and save all prompts I gave you till now there.
+   - **Note:** This prompt—documenting the development process for future reference. I obviously then went on to verify everything the LLM wrote.
 
 ---

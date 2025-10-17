@@ -72,7 +72,7 @@ export async function initializeConnection(): Promise<void> {
 
     const timeout = setTimeout(
       () => reject(new Error("Connection timeout")),
-      5000
+      5000,
     );
 
     client.addEventListener(
@@ -81,7 +81,7 @@ export async function initializeConnection(): Promise<void> {
         clearTimeout(timeout);
         resolve();
       },
-      { once: true }
+      { once: true },
     );
 
     client.addEventListener(
@@ -90,21 +90,42 @@ export async function initializeConnection(): Promise<void> {
         clearTimeout(timeout);
         reject(new Error("Connection failed"));
       },
-      { once: true }
+      { once: true },
     );
   });
 
   await waitForSystemMessage(5000);
 }
 
-export async function handleMessage(message: string): Promise<string> {
-  client.send(JSON.stringify({ type: "inquiry", content: message }));
+async function sendMessage(
+  type: string,
+  payload: Record<string, string>,
+): Promise<string> {
+  client.send(JSON.stringify({ type, ...payload }));
   return waitForUserMessage(30000);
 }
 
-export async function sendContextMessage(
-  commandOutput: string
-): Promise<string> {
-  client.send(JSON.stringify({ type: "context", commandOutput }));
-  return waitForUserMessage(30000);
+function getOSInfo(): string {
+  const platform = process.platform;
+  const shell = process.env.SHELL || "unknown";
+
+  const osMap: Record<string, string> = {
+    darwin: "macOS",
+    linux: "Linux",
+    win32: "Windows",
+  };
+
+  return `${osMap[platform] || platform} (shell: ${shell})`;
 }
+
+export const handleMessage = (message: string) =>
+  sendMessage("inquiry", {
+    content: message,
+    os: getOSInfo(),
+  });
+
+export const sendContextMessage = (commandOutput: string) =>
+  sendMessage("context", { commandOutput });
+
+export const sendRefinementMessage = (additionalContext: string) =>
+  sendMessage("refine", { additionalContext });
