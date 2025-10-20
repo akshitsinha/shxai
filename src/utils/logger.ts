@@ -2,7 +2,7 @@ import winston from "winston";
 import { tmpdir } from "os";
 import { join } from "path";
 
-const logDir = join(tmpdir(), "shellx-logs");
+const logDir = join(tmpdir(), "shxai-logs");
 const sessionId = `session-${Date.now()}`;
 
 const logger = winston.createLogger({
@@ -12,7 +12,7 @@ const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json(),
   ),
-  defaultMeta: { service: "shellx", sessionId },
+  defaultMeta: { service: "shxai", sessionId },
   transports: [
     new winston.transports.File({
       filename: join(logDir, `${sessionId}.log`),

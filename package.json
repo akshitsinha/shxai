@@ -1,11 +1,11 @@
 {
-  "name": "ai-shellx",
-  "version": "0.1.0",
-  "description": "A shell command assistant - get help with terminal commands and shell operations",
+  "name": "shxai",
+  "version": "0.2.0",
+  "description": "shxai: AI-powered shell command assistant for the terminal. Natural language to shell commands, with interactive refinement.",
   "main": "dist/index.js",
   "bin": {
-    "shellx": "./bin/shellx.js",
-    "shx": "./bin/shellx.js"
+    "shxai": "bin/shxai.js",
+    "shx": "bin/shxai.js"
   },
   "files": [
     "dist",
@@ -18,9 +18,11 @@
     "clean": "rm -rf dist",
     "deploy": "wrangler deploy",
     "worker:dev": "wrangler dev",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "prepare": "husky"
   },
   "keywords": [
+    "ai",
     "cli",
     "terminal",
     "command-line"
@@ -29,10 +31,10 @@
   "license": "MIT",
   "dependencies": {
     "@inquirer/prompts": "^7.9.0",
-    "agents": "^0.2.14",
-    "ai": "^5.0.76",
+    "agents": "^0.2.20",
+    "ai": "^5.0.86",
     "chalk": "^5.6.2",
-    "commander": "^14.0.1",
+    "commander": "^14.0.2",
     "ora": "^9.0.0",
     "uuid": "^13.0.0",
     "winston": "^3.18.3",
@@ -40,11 +42,17 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@types/node": "^22.18.11",
+    "@types/node": "^22.18.13",
     "cross-env": "^10.1.0",
     "esbuild": "^0.25.11",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
     "typescript": "^5.9.3",
-    "wrangler": "^4.43.0"
+    "wrangler": "^4.45.3"
+  },
+  "lint-staged": {
+    "*.ts": "prettier --write",
+    "*.js": "prettier --write"
   },
   "engines": {
     "node": ">=20.0.0"

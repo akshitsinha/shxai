@@ -8,7 +8,7 @@ export function getConfig(): Config {
     process.env.WORKER_URL ||
     (env === "development"
       ? "http://localhost:8787"
-      : "https://cf-shellx.asinha.workers.dev/");
+      : "https://shxai.asinha.workers.dev/");
 
   return { workerUrl };
 }

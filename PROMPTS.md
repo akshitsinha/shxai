@@ -1,6 +1,6 @@
-# Shx Project Prompts
+# shxai Project Prompts
 
-This document contains all the prompts and iterations I used to develop the ShellX CLI project, organized by development stage. Claude Sonnet 4.5 was used for most of these.
+This document contains all the prompts and iterations I used to develop the shxai CLI project, organized by development stage. Claude Sonnet 4.5 was used for most of these.
 
 ---
 
@@ -10,10 +10,10 @@ The foundation of the project. This stage establishes the basic CLI workflow and
 
 ### Prompts
 
-1. Scaffold a CLI project called "shellx" using Node.js. Use the latest stable version of all possible libraries. Feel free to search npm and GitHub for the latest stable versions and their API usage. This project should have a modern and minimal chatbot-like interface. For now, output "nothing" each time as a placeholder response. Confirm your plan for the project before proceeding.
+1. Scaffold a CLI project called "shxai" using Node.js. Use the latest stable version of all possible libraries. Feel free to search npm and GitHub for the latest stable versions and their API usage. This project should have a modern and minimal chatbot-like interface. For now, output "nothing" each time as a placeholder response. Confirm your plan for the project before proceeding.
    - **Note:** I like to confirm the plan with the AI before implementation to ensure it correctly understands the requirements.
 
-2. Prepare this project as an npm package. ShellX should have an alias `shx` when installed via npm. Search for the libraries you will be using for this project. Use the latest possible versions available, and read their API documentation online for proper usage.
+2. Prepare this project as an npm package. shxai should have an alias `shx` when installed via npm. Search for the libraries you will be using for this project. Use the latest possible versions available, and read their API documentation online for proper usage.
 
 3. Proceed with the implementation.
 
@@ -60,7 +60,7 @@ The majority of core functionality was implemented by hand and honestly, it's be
 
 7. Remove the separate command display and execution confirmation steps. Instead, prompt for execution in the same line where the suggested command is displayed. Use the `inquirer` prompts library for this.
 
-8. Prepare the npm project for publication. The project builds with `npm run build`, producing a minified file at `dist/index.js` and an entry point at `bin/shellx.js`.
+8. Prepare the npm project for publication. The project builds with `npm run build`, producing a minified file at `dist/index.js` and an entry point at `bin/shxai.js`.
 
 9. Create a README.md for this project. Keep it professional.
 
@@ -105,6 +105,28 @@ This stage focused on code quality improvements, eliminating duplication, and ad
    - **Note:** This enables the AI to automatically adapt suggestions based on the user's operating system and shell environment.
 
 7. Add a STAGE IV to PROMPTS.md and save all prompts I gave you till now there.
-   - **Note:** This prompt—documenting the development process for future reference. I obviously then went on to verify everything the LLM wrote.
+   - **Note:** Documenting the development process for future reference. I verified everything the LLM wrote afterward.
+
+---
+
+## Stage V: Simplification and Code Quality Improvements
+
+This stage focused on eliminating unnecessary complexity while maintaining all functionality. Every abstraction was questioned, every type was evaluated, and anything that didn't add clear value was removed. The philosophy here is to write simple, clean, understandable code that does exactly what it needs to do, nothing more.
+
+### Prompts
+
+1. I believe you can simplify this codebase, especially on the client side. You don't need separate functions for `sendContextMessage`, `handleMessage`, and `sendRefinementMessage`—just directly call `sendMessage()`.
+   - **Result:** Removed three wrapper functions from handlers.ts. Updated interface.ts to call `sendMessage()` directly with message type parameters.
+
+2. Can we simplify this further? Use arrow functions and add types where necessary.
+   - **Implementation:**
+     - handlers.ts: Unified `waitForSystemMessage` and `waitForUserMessage` into a single `waitForMessage` with a filter function. Converted all functions to arrow functions.
+     - interface.ts: Removed redundant functions, merged logic into cleaner implementations. Created `withSpinner` helper to eliminate duplicate spinner code.
+
+3. Why do we even have a separate `executeWithContext`? Can't we integrate all the functionality into the single loop we're using?
+   - **Result:** Completely removed `refineCommand` and `executeWithContext` functions. Unified everything into a single loop in `processMessage` that handles initial response, user refinement, context-based refinement, and final execution.
+
+4. Remove the explanation flag entirely. I believe its not much important, for now.
+   - **Result:** Removed all explanation-related code from server, client, and CLI. Simplified schema and removed `showExplanations`, `displayCommand()`, and explain parameters throughout.
 
 ---

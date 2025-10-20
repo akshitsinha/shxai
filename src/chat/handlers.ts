@@ -8,12 +8,11 @@ const client = new AgentClient({
   name: uuidv4(),
 });
 
-function isSystemMessage(data: any): boolean {
-  return data.type === "cf_agent_state" || data.type === "cf_agent_mcp_servers";
-}
+const isSystemMessage = (type: string) =>
+  type === "cf_agent_state" || type === "cf_agent_mcp_servers";
 
-function waitForSystemMessage(timeoutMs: number): Promise<string> {
-  return new Promise((resolve, reject) => {
+const waitForMessage = (timeoutMs: number, filter: (type: string) => boolean) =>
+  new Promise<string>((resolve, reject) => {
     const timeout = setTimeout(() => {
       cleanup();
       reject(new Error("Timeout"));
@@ -22,39 +21,10 @@ function waitForSystemMessage(timeoutMs: number): Promise<string> {
     const handler = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
-        if (!isSystemMessage(data)) return;
-      } catch {
-        return;
-      }
-
-      cleanup();
-      resolve(event.data);
-    };
-
-    const cleanup = () => {
-      clearTimeout(timeout);
-      client.removeEventListener("message", handler);
-    };
-
-    client.addEventListener("message", handler);
-  });
-}
-
-function waitForUserMessage(timeoutMs: number): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error("Timeout"));
-    }, timeoutMs);
-
-    const handler = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (isSystemMessage(data)) return;
+        if (!filter(data.type)) return;
+        cleanup();
+        resolve(event.data);
       } catch {}
-
-      cleanup();
-      resolve(event.data);
     };
 
     const cleanup = () => {
@@ -64,9 +34,8 @@ function waitForUserMessage(timeoutMs: number): Promise<string> {
 
     client.addEventListener("message", handler);
   });
-}
 
-export async function initializeConnection(): Promise<void> {
+export const initializeConnection = async () => {
   await new Promise<void>((resolve, reject) => {
     if (client.readyState === WebSocket.OPEN) return resolve();
 
@@ -94,38 +63,19 @@ export async function initializeConnection(): Promise<void> {
     );
   });
 
-  await waitForSystemMessage(5000);
-}
+  await waitForMessage(5000, isSystemMessage);
+};
 
-async function sendMessage(
-  type: string,
-  payload: Record<string, string>,
-): Promise<string> {
+export const sendMessage = (type: string, payload: Record<string, string>) => {
   client.send(JSON.stringify({ type, ...payload }));
-  return waitForUserMessage(30000);
-}
+  return waitForMessage(30000, (type) => !isSystemMessage(type));
+};
 
-function getOSInfo(): string {
-  const platform = process.platform;
-  const shell = process.env.SHELL || "unknown";
-
+export const getOSInfo = () => {
   const osMap: Record<string, string> = {
     darwin: "macOS",
     linux: "Linux",
     win32: "Windows",
   };
-
-  return `${osMap[platform] || platform} (shell: ${shell})`;
-}
-
-export const handleMessage = (message: string) =>
-  sendMessage("inquiry", {
-    content: message,
-    os: getOSInfo(),
-  });
-
-export const sendContextMessage = (commandOutput: string) =>
-  sendMessage("context", { commandOutput });
-
-export const sendRefinementMessage = (additionalContext: string) =>
-  sendMessage("refine", { additionalContext });
+  return `${osMap[process.platform] || process.platform} (shell: ${process.env.SHELL || "unknown"})`;
+};

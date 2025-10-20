@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "cf-shellx",
+  "name": "shxai",
   "main": "src/lib/server.ts",
   "compatibility_date": "2025-10-10",
   "compatibility_flags": ["nodejs_compat"],

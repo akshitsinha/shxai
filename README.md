@@ -1,14 +1,16 @@
-# ShellX
+# shxai
 
-A shell command assistant that translates natural language into shell commands with interactive refinement. Built with Cloudflare Workers AI for intelligent command generation and Cloudflare Durable Objects for persistent chat sessions, `shx` provides a seamless bridge between human intent and shell execution. Simply describe what you want to do in plain English, and `shx` will suggest the appropriate commands while learning from your preferences through interactive conversations.
+shxai is an AI-powered shell command assistant that translates natural language into shell commands with interactive refinement. Built with Cloudflare Workers AI for intelligent command generation and Cloudflare Durable Objects for persistent chat sessions, `shx` translates what you want into executable shell commands. Simply describe what you want to do in plain English, and `shx` will suggest the appropriate commands while learning from your preferences along the conversation.
+
+![shxai](https://i.postimg.cc/NfTSWZjX/output.gif)
 
 ## Installation
 
 ```bash
-npm install -g ai-shellx
+npm install -g shxai
 ```
 
-Once installed, use either `shellx` or `shx` command in your terminal.
+Once installed, use either `shxai` or `shx` command in your terminal.
 
 ## Usage
 
@@ -22,14 +24,6 @@ Or get a direct suggestion by providing your query:
 
 ```bash
 shx list all files in the current directory, including hidden ones
-```
-
-Show explanations for generated commands:
-
-```bash
-shx --explain list all files
-# or use the short form
-shx -e list all files
 ```
 
 ### Refine suggestions
