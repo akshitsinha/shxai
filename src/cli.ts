@@ -10,7 +10,7 @@ export function setupCLI(): Command {
     .description(
       "AI-powered shell command assistant - get help with terminal commands and shell operations",
     )
-    .version("0.2.1")
+    .version("0.2.2")
     .argument("[query...]", "Your shell command question or query")
     .action(async (queryArgs: string[]) => {
       try {
