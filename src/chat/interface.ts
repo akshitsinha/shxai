@@ -65,7 +65,7 @@ const processMessage = async (message: string) => {
     process.exit(0);
   }
 
-  const output = await withSpinner("Processing...", () =>
+  const output = await withSpinner(chalk.magenta("Processing..."), () =>
     sendMessage("inquiry", { content: message, os: getOSInfo() }),
   );
 
@@ -79,7 +79,7 @@ const processMessage = async (message: string) => {
     }
 
     if (contextOutput) {
-      const output = await withSpinner("Refining...", () =>
+      const output = await withSpinner(chalk.cyan("Refining..."), () =>
         sendMessage("context", { commandOutput: contextOutput! }),
       );
       current = JSON.parse(output);
@@ -90,7 +90,7 @@ const processMessage = async (message: string) => {
     const userInput = await promptUser(current.command);
 
     if (userInput.trim()) {
-      const output = await withSpinner("Refining...", () =>
+      const output = await withSpinner(chalk.cyan("Refining..."), () =>
         sendMessage("refine", { additionalContext: userInput }),
       );
       current = JSON.parse(output);

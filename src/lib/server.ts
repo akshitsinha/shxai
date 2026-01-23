@@ -1,5 +1,5 @@
 import { createWorkersAI } from "workers-ai-provider";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import {
   Agent,
   type Connection,
@@ -8,12 +8,12 @@ import {
   routeAgentRequest,
 } from "agents";
 import { env } from "cloudflare:workers";
-import { Ai } from "@cloudflare/workers-types";
 import { validate as uuidValidate } from "uuid";
 import { z } from "zod";
 
 const workersai = createWorkersAI({ binding: env.AI });
-const model = workersai("@cf/meta/llama-3-8b-instruct");
+// @ts-ignore
+const model = workersai("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
 
 const schema = z.object({
   command: z.string(),
@@ -36,10 +36,6 @@ const formatMessage = (type: string, data: Record<string, string>): string => {
       return "";
   }
 };
-
-export interface Env {
-  AI: Ai;
-}
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -68,17 +64,17 @@ export class ShellAgent extends Agent<Env, State> {
   }
 
   private async generateCommand(messages: Message[]): Promise<Response> {
-    const { object } = await generateObject({
+    const { output } = await generateText({
       model,
-      schema,
+      output: Output.object({ schema }),
       system: SYSTEM_PROMPT,
       messages,
     });
 
     return {
-      command: object.success ? object.command : "",
-      needContext: object.needContext ?? false,
-      success: object.success ?? false,
+      command: output.success ? output.command : "",
+      needContext: output.needContext ?? false,
+      success: output.success ?? false,
     };
   }
 
