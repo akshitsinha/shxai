@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { startChat } from "@/chat/interface";
 import { logger } from "@/utils/logger";
+import { version } from "package.json";
 
 const program = new Command();
 
@@ -10,7 +11,7 @@ export function setupCLI(): Command {
     .description(
       "AI-powered shell command assistant - get help with terminal commands and shell operations",
     )
-    .version("0.2.5")
+    .version(version)
     .argument("[query...]", "Your shell command question or query")
     .action(async (queryArgs: string[]) => {
       try {

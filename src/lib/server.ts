@@ -7,13 +7,8 @@ import {
   type WSMessage,
   routeAgentRequest,
 } from "agents";
-import { env } from "cloudflare:workers";
 import { validate as uuidValidate } from "uuid";
 import { z } from "zod";
-
-const workersai = createWorkersAI({ binding: env.AI });
-// @ts-ignore
-const model = workersai("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
 
 const schema = z.object({
   command: z.string(),
@@ -64,6 +59,8 @@ export class ShellAgent extends Agent<Env, State> {
   }
 
   private async generateCommand(messages: Message[]): Promise<Response> {
+    const workersai = createWorkersAI({ binding: this.env.AI });
+    const model = workersai("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
     const { output } = await generateText({
       model,
       output: Output.object({ schema }),
