@@ -55,7 +55,12 @@ export class ShellAgent extends Agent<Env, State> {
 
     if (!sessionId || !uuidValidate(sessionId)) {
       connection.close(1008, "Invalid session ID");
+      return;
     }
+  }
+
+  async onError(connection: Connection | unknown, error?: unknown) {
+    console.error("WebSocket error:", error ?? connection);
   }
 
   private async generateCommand(messages: Message[]): Promise<Response> {
@@ -104,7 +109,12 @@ export class ShellAgent extends Agent<Env, State> {
     }
   }
 
-  async onClose(_connection: Connection) {}
+  async onClose(
+    _connection: Connection,
+    _code: number,
+    _reason: string,
+    _wasClean: boolean,
+  ) {}
 }
 
 export default {
