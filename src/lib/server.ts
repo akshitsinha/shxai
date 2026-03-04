@@ -1,13 +1,5 @@
 import { createWorkersAI } from "workers-ai-provider";
 import { generateText, Output } from "ai";
-import {
-  Agent,
-  type Connection,
-  type ConnectionContext,
-  type WSMessage,
-  routeAgentRequest,
-} from "agents";
-import { validate as uuidValidate } from "uuid";
 import { z } from "zod";
 
 const schema = z.object({
@@ -33,95 +25,65 @@ const formatMessage = (type: string, data: Record<string, string>): string => {
 };
 
 interface Message {
-  role: "user" | "assistant" | "system";
+  role: "user" | "assistant";
   content: string;
 }
 
-interface Response {
-  command: string;
-  needContext: boolean;
-  success: boolean;
-}
-
-interface State {
-  messages: Message[];
-}
-
-export class ShellAgent extends Agent<Env, State> {
-  initialState: State = { messages: [] };
-
-  async onConnect(connection: Connection, ctx: ConnectionContext) {
-    const sessionId = new URL(ctx.request.url).pathname.split("/").pop();
-
-    if (!sessionId || !uuidValidate(sessionId)) {
-      connection.close(1008, "Invalid session ID");
-      return;
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    if (request.method === "GET") {
+      return new Response(null, { status: 204 });
     }
-  }
 
-  async onError(connection: Connection | unknown, error?: unknown) {
-    console.error("WebSocket error:", error ?? connection);
-  }
-
-  private async generateCommand(messages: Message[]): Promise<Response> {
-    const workersai = createWorkersAI({ binding: this.env.AI });
-    const model = workersai("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
-    const { output } = await generateText({
-      model,
-      output: Output.object({ schema }),
-      system: SYSTEM_PROMPT,
-      messages,
-    });
-
-    return {
-      command: output.success ? output.command : "",
-      needContext: output.needContext ?? false,
-      success: output.success ?? false,
-    };
-  }
-
-  async onMessage(connection: Connection, message: WSMessage) {
-    if (typeof message !== "string") return;
+    if (request.method !== "POST") {
+      return Response.redirect("https://npmjs.com/package/shxai", 301);
+    }
 
     try {
-      const data = JSON.parse(message);
-      const userContent = formatMessage(data.type, data);
+      const data = (await request.json()) as Record<string, unknown>;
+      const { type, messages = [], modelId, ...payload } = data;
 
-      if (!userContent) return;
+      const userContent = formatMessage(
+        type as string,
+        payload as Record<string, string>,
+      );
+      if (!userContent) {
+        return Response.json(
+          { error: "Invalid message type" },
+          { status: 400 },
+        );
+      }
 
-      const messages: Message[] = [
-        ...this.state.messages,
+      const allMessages: Message[] = [
+        ...(messages as Message[]),
         { role: "user", content: userContent },
       ];
 
-      const response = await this.generateCommand(messages);
+      const workersai = createWorkersAI({ binding: env.AI });
+      const model = workersai(
+        (modelId as string) || "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      );
+      const { output } = await generateText({
+        model,
+        output: Output.object({ schema }),
+        system: SYSTEM_PROMPT,
+        messages: allMessages,
+      });
 
-      connection.send(JSON.stringify(response));
-
-      this.setState({
+      return Response.json({
+        command: output.success ? output.command : "",
+        needContext: output.needContext ?? false,
+        success: output.success ?? false,
         messages: [
-          ...messages,
-          { role: "assistant", content: JSON.stringify(response) },
+          ...allMessages,
+          { role: "assistant", content: JSON.stringify(output) },
         ],
       });
-    } catch (error) {
-      connection.send(JSON.stringify({ error: "Failed to process message" }));
+    } catch {
+      return Response.json(
+        { error: "Failed to process request" },
+        { status: 500 },
+      );
     }
-  }
-
-  async onClose(
-    _connection: Connection,
-    _code: number,
-    _reason: string,
-    _wasClean: boolean,
-  ) {}
-}
-
-export default {
-  async fetch(request: Request, env: Env, _ctx: ExecutionContext) {
-    const agentResponse = await routeAgentRequest(request, env);
-    return (
-      agentResponse ?? Response.redirect("https://npmjs.com/package/shxai", 301)
-    );
   },
 } satisfies ExportedHandler<Env>;

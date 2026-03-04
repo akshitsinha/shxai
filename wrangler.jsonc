@@ -8,20 +8,6 @@
     "binding": "AI",
     "remote": true,
   },
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "SHELL_AGENT",
-        "class_name": "ShellAgent",
-      },
-    ],
-  },
-  "migrations": [
-    {
-      "tag": "v2",
-      "new_sqlite_classes": ["ShellAgent"],
-    },
-  ],
   "observability": {
     "enabled": false,
   },

@@ -1,7 +1,7 @@
 import { input } from "@inquirer/prompts";
 import ora from "ora";
 import chalk from "chalk";
-import { sendMessage, getOSInfo, initializeConnection } from "@/chat/handlers";
+import { sendMessage, getOSInfo, connect } from "@/chat/handlers";
 import { logger } from "@/utils/logger";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -112,10 +112,14 @@ const processMessage = async (message: string) => {
 
 export const startChat = async (initialQuery?: string) => {
   try {
-    await initializeConnection();
+    await connect();
   } catch (error) {
     logger.error(error);
-    console.log(chalk.red("Failed to initialize connection"));
+    console.log(
+      chalk.red(
+        error instanceof Error ? error.message : "Failed to connect to server",
+      ),
+    );
     process.exit(1);
   }
 
