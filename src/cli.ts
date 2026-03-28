@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { startChat } from "@/chat/interface";
 import { logger } from "@/utils/logger";
-import { version } from "package.json";
+import { version } from "../package.json";
 
 const program = new Command();
 

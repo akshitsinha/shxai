@@ -60,7 +60,7 @@ export class ShellAgent extends Agent<Env, State> {
 
   private async generateCommand(messages: Message[]): Promise<Response> {
     const workersai = createWorkersAI({ binding: this.env.AI });
-    const model = workersai("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
+    const model = workersai("@cf/moonshotai/kimi-k2.5");
     const { output } = await generateText({
       model,
       output: Output.object({ schema }),

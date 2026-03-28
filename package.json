@@ -1,6 +1,6 @@
 {
   "name": "shxai",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "shxai: AI-powered shell command assistant for the terminal. Natural language to shell commands, with interactive refinement.",
   "main": "dist/index.js",
   "bin": {
@@ -31,25 +31,25 @@
   "author": "Akshit Sinha",
   "license": "MIT",
   "dependencies": {
-    "@inquirer/prompts": "^8.3.0",
-    "agents": "^0.7.5",
-    "ai": "^6.0.116",
+    "@inquirer/prompts": "^8.3.2",
+    "agents": "^0.8.7",
+    "ai": "^6.0.141",
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
     "ora": "^9.3.0",
     "uuid": "^13.0.0",
     "winston": "^3.19.0",
-    "workers-ai-provider": "^3.1.2",
+    "workers-ai-provider": "^3.1.8",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^24.12.0",
     "cross-env": "^10.1.0",
-    "esbuild": "^0.27.3",
+    "esbuild": "^0.27.4",
     "husky": "^9.1.7",
-    "lint-staged": "^16.3.2",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.71.0"
+    "lint-staged": "^16.4.0",
+    "typescript": "^6.0.2",
+    "wrangler": "^4.78.0"
   },
   "lint-staged": {
     "*.ts": "prettier --write",
